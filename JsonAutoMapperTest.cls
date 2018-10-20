@@ -17,8 +17,28 @@ public class JsonAutoMapperTest {
 
 	@IsTest
 	static void it_should_rename_keywords_only() {
+        
+        // null test
 		TestDefault mdlNull = (TestDefault)new JsonAutoMapper().deserialize('null', TestDefault.class);
 		System.assertEquals(null, mdlNull);
+        
+        // string test
+		String mdlString = (String)new JsonAutoMapper().deserialize('"string"', String.class);
+		System.assertEquals('string', mdlString);
+        
+        // integer test
+		Integer mdlInteger = (Integer)new JsonAutoMapper().deserialize('123', Integer.class);
+		System.assertEquals(123, mdlInteger);
+        
+        // double test
+		Double mdlDouble = (Double)new JsonAutoMapper().deserialize('123.456', Double.class);
+		System.assertEquals(123.456, mdlDouble);
+        
+        // Boolean test
+		Boolean mdlTrue = (Boolean)new JsonAutoMapper().deserialize('true', Boolean.class);
+		System.assertEquals(true, mdlTrue);
+		Boolean mdlFalse = (Boolean)new JsonAutoMapper().deserialize('false', Boolean.class);
+		System.assertEquals(false, mdlFalse);
         
         // single model
         String jsonString = '{' +
