@@ -1,29 +1,32 @@
 public class JsonAutoMapper {
-    public final String RESERVED_KEYWORDS = 'abstract|activate|and|any|array|as|asc|autonomous|begin|bigdecimal|blob|break|bulk|by|byte|case|cast|catch|char|class|collect|commit|const|continue|convertcurrency|decimal|default|delete|desc|do|else|end|enum|exception|exit|export|extends|false|final|finally|float|for|from|future|global|goto|group|having|hint|if|implements|import|in|inner|insert|instanceof|interface|into|int|join|last_90_days|last_month|last_n_days|last_week|like|limit|list|long|loop|map|merge|new|next_90_days|next_month|next_n_days|next_week|not|null|nulls|number|object|of|on|or|outer|override|package|parallel|pragma|private|protected|public|retrieve|return|returning|rollback|savepoint|search|select|set|short|sort|stat|static|super|switch|synchronized|system|testmethod|then|this|this_month|this_week|throw|today|tolabel|tomorrow|transaction|trigger|true|try|type|undelete|update|upsert|using|virtual|webservice|when|where|while|yesterday';
-    public final String IGNORE_CASE = '(?i)';
-    public final String VARIABLE_PATH = '([\\s\\S]*\\.|[\\s\\S]\\[\\d+]])';
-    public final String INVALID_VARIABLE_CHARS = '[^a-z0-9_]';
-    public final String INVALID_UNDERSCORES = '(?:^_+|_+$|(?<=_)_+)';
-    public final Integer MAX_VARIABLE_LENGTH = 255;
+    public static final String RESERVED_KEYWORDS = 'abstract|activate|and|any|array|as|asc|autonomous|begin|bigdecimal|blob|break|bulk|by|byte|case|cast|catch|char|class|collect|commit|const|continue|convertcurrency|decimal|default|delete|desc|do|else|end|enum|exception|exit|export|extends|false|final|finally|float|for|from|future|global|goto|group|having|hint|if|implements|import|in|inner|insert|instanceof|interface|into|int|join|last_90_days|last_month|last_n_days|last_week|like|limit|list|long|loop|map|merge|new|next_90_days|next_month|next_n_days|next_week|not|null|nulls|number|object|of|on|or|outer|override|package|parallel|pragma|private|protected|public|retrieve|return|returning|rollback|savepoint|search|select|set|short|sort|stat|static|super|switch|synchronized|system|testmethod|then|this|this_month|this_week|throw|today|tolabel|tomorrow|transaction|trigger|true|try|type|undelete|update|upsert|using|virtual|webservice|when|where|while|yesterday';
+    public static final String IGNORE_CASE = '(?i)';
+    public static final String VARIABLE_PATH = '([\\s\\S]*\\.|[\\s\\S]\\[\\d+]])';
+    public static final String INVALID_VARIABLE_CHARS = '[^a-z0-9_]';
+    public static final String INVALID_UNDERSCORES = '(?:^_+|_+$|(?<=_)_+)';
+    public static final Integer MAX_VARIABLE_LENGTH = 255;
     
-    public List<String[]> fieldMapping { get; private set; }
+    private static Pattern defaultPattern = Pattern.compile(IGNORE_CASE + '^' + VARIABLE_PATH + '(' + RESERVED_KEYWORDS + ')$');
+    private static Pattern patternToken = Pattern.compile('\\[(\\d+)]|\\.([^\\.\\[]+)');
+
+    private List<Pattern> targets = new List<Pattern>();
+    private List<String> replacements = new List<String>();
 
     public JsonAutoMapper() {
-        List<String[]> defaultFieldMapping = new List<String[]> {
-            new String[] {
-                IGNORE_CASE + '^' + VARIABLE_PATH + '(' + RESERVED_KEYWORDS + ')$',
-                '$1$2_x'
-            }
-        };
-        initialize(defaultFieldMapping);
+        targets.add(defaultPattern);
+        replacements.add('$1$2_x');
     }
 
-    private void initialize(List<String[]> fieldMapping) {
-        this.fieldMapping = fieldMapping;
+    public JsonAutoMapper(Boolean createDefault) {
+        if (createDefault) {
+            targets.add(defaultPattern);
+            replacements.add('$1$2_x');
+        }
     }
 
     public JsonAutoMapper reset() {
-        fieldMapping.clear();
+        targets.clear();
+        replacements.clear();
         return this;
     }
 
@@ -32,10 +35,8 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper addField(String target, String replacement, Boolean ignoreCase) {
-        fieldMapping.add(new String[] {
-            (ignoreCase ? IGNORE_CASE : '') + '^([\\s\\S]*\\.)(' + target + ')$',
-            '$1' + replacement
-        });
+        targets.add(Pattern.compile((ignoreCase ? IGNORE_CASE : '') + '^([\\s\\S]*\\.)(' + target + ')$'));
+        replacements.add('$1' + replacement);
         return this;
     }
 
@@ -44,10 +45,8 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper addPath(String target, String replacement, Boolean ignoreCase) {
-        fieldMapping.add(new String[] {
-            (ignoreCase ? IGNORE_CASE : '') + '^' + target + '$',
-            replacement
-        });
+        targets.add(Pattern.compile((ignoreCase ? IGNORE_CASE : '') + '^' + target + '$'));
+        replacements.add(replacement);
         return this;
     }
         
@@ -84,8 +83,8 @@ public class JsonAutoMapper {
 
     private String transformPath(String pathInput) {
         String pathOutput = pathInput;
-        for (String[] mapping: fieldMapping) {
-            pathOutput = pathOutput.replaceAll(mapping[0], mapping[1]);
+        for (Integer i = 0; i < targets.size(); i++) {
+            pathOutput = targets[i].matcher(pathOutput).replaceAll(replacements[i]);
         }
         return pathOutput;
     }
@@ -120,7 +119,6 @@ public class JsonAutoMapper {
     
     private Map<String, Object> spreadObject(Map<String, Object> output) {
         Map<String, Object> mapObject = new Map<String, Object>();
-        Pattern patternToken = Pattern.compile('\\[(\\d+)]|\\.([^\\.\\[]+)');
 		
         for (String path: output.keySet()) {
             Map<String, Object> mapCurrent = mapObject;

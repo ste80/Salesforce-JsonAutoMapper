@@ -65,8 +65,7 @@ public class JsonAutoMapperTest {
         }
         
         /* change the naming conversion */
-        JsonAutoMapper mapper = new JsonAutoMapper()
-            .reset()
+        JsonAutoMapper mapper = new JsonAutoMapper(false)
             .addField('abstract', 'PREFIXabstractSUFFIX')
             .addField('int', 'numberValue');
         
@@ -89,8 +88,7 @@ public class JsonAutoMapperTest {
             	'"normalStr": "def",' +
             	'"normalInt": 456' +
             '}]}';
-        JsonAutoMapper mapper1 = new JsonAutoMapper()
-            .reset()
+        JsonAutoMapper mapper1 = new JsonAutoMapper(false)
             .addPath('\\.a\\[0]\\.abstract', '.PREFIXabstractSUFFIX')
             .addPath('\\.a\\[0]\\.int', '.numberValue')
             .addPath('\\.a\\[0]\\.normalStr', '.normalStr')
@@ -119,8 +117,7 @@ public class JsonAutoMapperTest {
             	'"def",' +
             	'456' +
             ']]';
-        JsonAutoMapper mapper2 = new JsonAutoMapper()
-            .reset()
+        JsonAutoMapper mapper2 = new JsonAutoMapper(false)
             .addPath('\\[(\\d+)]\\[0]', '[$1].PREFIXabstractSUFFIX')
             .addPath('\\[(\\d+)]\\[1]', '[$1].numberValue')
             .addPath('\\[(\\d+)]\\[2]', '[$1].normalStr')
@@ -145,8 +142,7 @@ public class JsonAutoMapperTest {
             mdl.normalInt = i == 0 ? 11 : 22;
             listDefault.add(mdl);
         }
-        JsonAutoMapper mapper3 = new JsonAutoMapper()
-            .reset()
+        JsonAutoMapper mapper3 = new JsonAutoMapper(false)
             .addField('abstract_x', 'PREFIXabstractSUFFIX')
             .addField('int_x', 'numberValue');
 		List<TestCustom> mdlCustom3 = (List<TestCustom>)mapper3.deserialize(JSON.serialize(listDefault), List<TestCustom>.class);
