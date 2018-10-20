@@ -45,8 +45,8 @@ public class JsonAutoMapperTest {
         }
         
         /* change the naming conversion */
-        JsonAutoMapper mapper = new JsonAutoMapper();
-        mapper.reset()
+        JsonAutoMapper mapper = new JsonAutoMapper()
+            .reset()
             .addField('abstract', 'PREFIXabstractSUFFIX')
             .addField('int', 'numberValue');
         
@@ -69,8 +69,8 @@ public class JsonAutoMapperTest {
             	'"normalStr": "def",' +
             	'"normalInt": 456' +
             '}]}';
-        JsonAutoMapper mapper1 = new JsonAutoMapper();
-        mapper1.reset()
+        JsonAutoMapper mapper1 = new JsonAutoMapper()
+            .reset()
             .addPath('\\.a\\[0]\\.abstract', '.PREFIXabstractSUFFIX')
             .addPath('\\.a\\[0]\\.int', '.numberValue')
             .addPath('\\.a\\[0]\\.normalStr', '.normalStr')
@@ -99,8 +99,8 @@ public class JsonAutoMapperTest {
             	'"def",' +
             	'456' +
             ']]';
-        JsonAutoMapper mapper2 = new JsonAutoMapper();
-        mapper2.reset()
+        JsonAutoMapper mapper2 = new JsonAutoMapper()
+            .reset()
             .addPath('\\[(\\d+)]\\[0]', '[$1].PREFIXabstractSUFFIX')
             .addPath('\\[(\\d+)]\\[1]', '[$1].numberValue')
             .addPath('\\[(\\d+)]\\[2]', '[$1].normalStr')
@@ -113,6 +113,31 @@ public class JsonAutoMapperTest {
             System.assertEquals(123, mdl.get('numberValue'));
             System.assertEquals('def', mdl.get('normalStr'));
             System.assertEquals(456, mdl.get('normalInt'));
+        }
+        
+        /* type convertion */
+        List<TestDefault> listDefault = new List<TestDefault>();
+        for (Integer i = 0; i <= 1; i++) {
+            TestDefault mdl = new TestDefault();
+            mdl.abstract_x = i == 0 ? 'a' : 'b';
+            mdl.int_x = i == 0 ? 1 : 2;
+            mdl.normalStr = i == 0 ? 'aa' : 'bb';
+            mdl.normalInt = i == 0 ? 11 : 22;
+            listDefault.add(mdl);
+        }
+        JsonAutoMapper mapper3 = new JsonAutoMapper()
+            .reset()
+            .addPath('\\[(\\d+)]\\.abstract_x', '[$1].PREFIXabstractSUFFIX')
+            .addPath('\\[(\\d+)]\\.int_x', '[$1].numberValue')
+            .addPath('\\[(\\d+)]\\.normalStr', '[$1].normalStr')
+            .addPath('\\[(\\d+)]\\.normalInt', '[$1].normalInt');
+		List<TestCustom> mdlCustom3 = (List<TestCustom>)mapper3.deserialize(JSON.serialize(listDefault), List<TestCustom>.class);
+        for (Integer i = 0; i < mdlCustom3.size(); i++) {
+            TestCustom mdl = mdlCustom3[i];
+            System.assertEquals(i == 0 ? 'a' : 'b', mdl.PREFIXabstractSUFFIX);
+            System.assertEquals(i == 0 ? 1 : 2, mdl.numberValue);
+            System.assertEquals(i == 0 ? 'aa' : 'bb', mdl.normalStr);
+            System.assertEquals(i == 0 ? 11 : 22, mdl.normalInt);
         }
 	}
 }
