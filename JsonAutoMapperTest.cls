@@ -147,10 +147,8 @@ public class JsonAutoMapperTest {
         }
         JsonAutoMapper mapper3 = new JsonAutoMapper()
             .reset()
-            .addPath('\\[(\\d+)]\\.abstract_x', '[$1].PREFIXabstractSUFFIX')
-            .addPath('\\[(\\d+)]\\.int_x', '[$1].numberValue')
-            .addPath('\\[(\\d+)]\\.normalStr', '[$1].normalStr')
-            .addPath('\\[(\\d+)]\\.normalInt', '[$1].normalInt');
+            .addField('abstract_x', 'PREFIXabstractSUFFIX')
+            .addField('int_x', 'numberValue');
 		List<TestCustom> mdlCustom3 = (List<TestCustom>)mapper3.deserialize(JSON.serialize(listDefault), List<TestCustom>.class);
         for (Integer i = 0; i < mdlCustom3.size(); i++) {
             TestCustom mdl = mdlCustom3[i];

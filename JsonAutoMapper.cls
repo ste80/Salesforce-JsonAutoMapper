@@ -34,7 +34,7 @@ public class JsonAutoMapper {
     public JsonAutoMapper addField(String target, String replacement, Boolean ignoreCase) {
         fieldMapping.add(new String[] {
             (ignoreCase ? IGNORE_CASE : '') + '^([\\s\\S]*\\.)(' + target + ')$',
-            '.' + replacement
+            '$1' + replacement
         });
         return this;
     }
