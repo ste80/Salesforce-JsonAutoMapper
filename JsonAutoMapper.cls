@@ -64,7 +64,7 @@ public class JsonAutoMapper {
     public Object convert(Object objInput, System.Type apexType) {
         Object objConverted = convert(objInput);
         String jsonString = JSON.serialize(objConverted);
-        System.debug(jsonString);
+        // System.debug(jsonString);
         return JSON.deserialize(jsonString, apexType);
     }
     
@@ -114,7 +114,7 @@ public class JsonAutoMapper {
     
     private Object getData(Map<String, Object> output) {
         Map<String, Object> mapObject = spreadObject(output);
-        System.debug(mapObject);
+        // System.debug(mapObject);
         return reformatObject(mapObject);
     }
     

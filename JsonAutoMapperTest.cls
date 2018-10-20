@@ -57,7 +57,7 @@ public class JsonAutoMapperTest {
 		System.assertEquals(456, mdlCustom.normalInt);
         
         
-        /* flatter */
+        /* flatten */
         String multipleDeepJson = '{"a":[{' +
             	'"abstract": "abc",' +
             	'"int": 123,' +
