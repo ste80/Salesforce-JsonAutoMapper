@@ -63,6 +63,11 @@ public class JsonAutoMapperTest {
             	'"int": 123,' +
             	'"normalStr": "def",' +
             	'"normalInt": 456' +
+            '},{' +
+            	'"abstract": "abc",' +
+            	'"int": 123,' +
+            	'"normalStr": "def",' +
+            	'"normalInt": 456' +
             '}]}';
         JsonAutoMapper mapper1 = new JsonAutoMapper();
         mapper1.reset()
@@ -79,6 +84,16 @@ public class JsonAutoMapperTest {
         
         /* array of array to array of object */
         String arrayOfArray = '[[' +
+            	'"abc",' +
+            	'123,' +
+            	'"def",' +
+            	'456' +
+            '],[' +
+            	'"abc",' +
+            	'123,' +
+            	'"def",' +
+            	'456' +
+            '],[' +
             	'"abc",' +
             	'123,' +
             	'"def",' +
