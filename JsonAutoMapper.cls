@@ -16,9 +16,8 @@ public class JsonAutoMapper {
     // Regex too complicated
     // private List<Pattern> quotedFields = new List<Pattern>();
     // private List<String> replacementQuotedFields = new List<String>();
-
-    private List<Pattern> targetFields = new List<Pattern>();
-    private List<String> replacementFields = new List<String>();
+    // private List<Pattern> targetFields = new List<Pattern>();
+    // private List<String> replacementFields = new List<String>();
 
     private List<Pattern> targetPaths = new List<Pattern>();
     private List<String> replacementPaths = new List<String>();
@@ -37,8 +36,8 @@ public class JsonAutoMapper {
     	// Regex too complicated
         // quotedFields.clear();
         // replacementQuotedFields.clear();
-        targetFields.clear();
-        replacementFields.clear();
+        // targetFields.clear();
+        // replacementFields.clear();
         targetPaths.clear();
         replacementPaths.clear();
         return this;
@@ -53,9 +52,12 @@ public class JsonAutoMapper {
         // quotedFields.add(Pattern.compile(
         //     (ignoreCase ? IGNORE_CASE : '') + OBJECT_QUOTE_START + '(' + target + ')' + OBJECT_QUOTE_END));
         // replacementQuotedFields.add('$1' + replacement + '":');
-        targetFields.add(Pattern.compile(
+        // targetFields.add(Pattern.compile(
+        //    (ignoreCase ? IGNORE_CASE : '') + '^(' + VARIABLE_PATH + ')(' + target + ')$'));
+        // replacementFields.add('$1' + replacement);
+        targetPaths.add(Pattern.compile(
             (ignoreCase ? IGNORE_CASE : '') + '^(' + VARIABLE_PATH + ')(' + target + ')$'));
-        replacementFields.add('$1' + replacement);
+        replacementPaths.add('$1' + replacement);
         return this;
     }
 
@@ -106,7 +108,7 @@ public class JsonAutoMapper {
         // JSONParser: 
         Map<String, Object> indexer = new Map<String, Object>();
         JSONParser parser = JSON.createParser(jsonString);
-        parseJson(indexer,'', parser);
+        parseJson(indexer,'', parser, jsonString);
         
         // System.debug('convertedJson');
         // System.debug(JSON.serialize(indexer));
@@ -140,27 +142,31 @@ public class JsonAutoMapper {
 
     private String transformPath(String pathInput) {
         String pathOutput = pathInput;
+        
+        // Regex too complicated
         // System.debug('transformPath ' + pathOutput);
-        for (Integer i = 0; i < targetFields.size(); i++) {
-            pathOutput = targetFields[i].matcher(pathOutput).replaceAll(replacementFields[i]);
-        }
+        // for (Integer i = 0; i < targetFields.size(); i++) {
+        //    pathOutput = targetFields[i].matcher(pathOutput).replaceAll(replacementFields[i]);
+        // }
+        
         // System.debug('transformPath ' + pathOutput);
         for (Integer i = 0; i < targetPaths.size(); i++) {
             pathOutput = targetPaths[i].matcher(pathOutput).replaceAll(replacementPaths[i]);
         }
+        
         return pathOutput;
     }
 
-	private void parseJson(Map<String, Object> indexer, String path, JSONParser parser) {
+	private void parseJson(Map<String, Object> indexer, String path, JSONParser parser, String jsonString) {
         JSONToken prevToken = null;
         JSONToken token = parser.nextToken();
         while (token != null) {
             switch on token {
                 when START_OBJECT {
-                    parseJObject(indexer, path, parser);
+                    parseJObject(indexer, path, parser, jsonString);
                 }
                 when START_ARRAY {
-                	parseJArray(indexer, path, 0, parser);
+                	parseJArray(indexer, path, 0, parser, jsonString);
                 }
                 when VALUE_STRING, VALUE_EMBEDDED_OBJECT {
                     indexer.put(transformPath(path), parser.getText());
@@ -183,17 +189,17 @@ public class JsonAutoMapper {
         }
     }
 
-	private void parseJObject(Map<String, Object> indexer, String path, JSONParser parser) {
+	private void parseJObject(Map<String, Object> indexer, String path, JSONParser parser, String jsonString) {
         JSONToken prevToken = null;
         JSONToken token = parser.nextToken();
         String fieldName = '';
         while (token != null) {
             switch on token {
                 when START_OBJECT {
-                    parseJObject(indexer, path + '.' + fieldName, parser);
+                    parseJObject(indexer, path + '.' + fieldName, parser, jsonString);
                 }
                 when START_ARRAY {
-                	parseJArray(indexer, path + '.' + fieldName, 0, parser);
+                	parseJArray(indexer, path + '.' + fieldName, 0, parser, jsonString);
                 }
                 when FIELD_NAME {
                     fieldName = parser.getText();
@@ -222,16 +228,16 @@ public class JsonAutoMapper {
         }
     }
     
-    private void parseJArray(Map<String, Object> indexer, String path, Integer arrayIndex, JSONParser parser) {
+    private void parseJArray(Map<String, Object> indexer, String path, Integer arrayIndex, JSONParser parser, String jsonString) {
         JSONToken prevToken = null;
         JSONToken token = parser.nextToken();
         while (token != null) {
             switch on token {
                 when START_OBJECT {
-                    parseJObject(indexer, path + '[' + arrayIndex++ + ']', parser);
+                    parseJObject(indexer, path + '[' + arrayIndex++ + ']', parser, jsonString);
                 }
                 when START_ARRAY {
-                	parseJArray(indexer, path + '[' + arrayIndex++ + ']', 0, parser);
+                	parseJArray(indexer, path + '[' + arrayIndex++ + ']', 0, parser, jsonString);
                 }
                 when VALUE_STRING, VALUE_EMBEDDED_OBJECT {
                     indexer.put(transformPath(path + '[' + (arrayIndex++) + ']'), parser.getText());
