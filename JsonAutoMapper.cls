@@ -2,7 +2,7 @@ public class JsonAutoMapper {
     public static final String RESERVED_KEYWORDS = 'abstract|activate|and|any|array|as|asc|autonomous|begin|bigdecimal|blob|break|bulk|by|byte|case|cast|catch|char|class|collect|commit|const|continue|convertcurrency|decimal|default|delete|desc|do|else|end|enum|exception|exit|export|extends|false|final|finally|float|for|from|future|global|goto|group|having|hint|if|implements|import|in|inner|insert|instanceof|interface|into|int|join|last_90_days|last_month|last_n_days|last_week|like|limit|list|long|loop|map|merge|new|next_90_days|next_month|next_n_days|next_week|not|null|nulls|number|object|of|on|or|outer|override|package|parallel|pragma|private|protected|public|retrieve|return|returning|rollback|savepoint|search|select|set|short|sort|stat|static|super|switch|synchronized|system|testmethod|then|this|this_month|this_week|throw|today|tolabel|tomorrow|transaction|trigger|true|try|type|undelete|update|upsert|using|virtual|webservice|when|where|while|yesterday';
     public static final String IGNORE_CASE = '(?i)';
  
-    // Regex too complicated: rollback
+    // // Regex too complicated: rollback
     // public static final String OBJECT_QUOTE_START = '(?<!\\\\)(\\")';
     // public static final String OBJECT_QUOTE_END = '(?<!\\\\)\\"\\s*:';
 
@@ -13,7 +13,7 @@ public class JsonAutoMapper {
     
     private static Pattern patternToken = Pattern.compile('\\[(\\d+)]|\\.([^\\.\\[]+)');
 
-    // Regex too complicated: rollback
+    // // Regex too complicated: rollback
     // private List<Pattern> quotedFields = new List<Pattern>();
     // private List<String> replacementQuotedFields = new List<String>();
     // private List<Pattern> targetFields = new List<Pattern>();
@@ -33,7 +33,7 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper reset() {
-    	// Regex too complicated: rollback
+    	// // Regex too complicated: rollback
         // quotedFields.clear();
         // replacementQuotedFields.clear();
         // targetFields.clear();
@@ -48,7 +48,7 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper addField(String target, String replacement, Boolean ignoreCase) {
-    	// Regex too complicated: rollback
+    	// // Regex too complicated: rollback
         // quotedFields.add(Pattern.compile(
         //     (ignoreCase ? IGNORE_CASE : '') + OBJECT_QUOTE_START + '(' + target + ')' + OBJECT_QUOTE_END));
         // replacementQuotedFields.add('$1' + replacement + '":');
@@ -77,7 +77,7 @@ public class JsonAutoMapper {
 	}
         
     public Object deserialize(String jsonString, System.Type apexType) {
-    	// Regex too complicated: rollback
+    	// // Regex too complicated: rollback
         // if (targetPaths.size() > 0) {
         Map<String, Object> indexer = parseJsonToIndexer(jsonString);
         String convertedJsonString = serializeIndexer(indexer);
@@ -91,7 +91,7 @@ public class JsonAutoMapper {
     public String serialize(Object objInput) {
         String jsonString = JSON.serialize(objInput);
         
-    	// Regex too complicated: rollback
+    	// // Regex too complicated: rollback
         // if (targetPaths.size() > 0) {
         Map<String, Object> indexer = parseJsonToIndexer(jsonString);
         return serializeIndexer(indexer);
@@ -113,19 +113,13 @@ public class JsonAutoMapper {
         Object untyped = JSON.deserializeUntyped(jsonString);
         Map<String, Object> indexer = convertToIndexer(untyped);
 
-        // JSONParser: higher CPU
+        // // JSONParser: higher CPU
         // Map<String, Object> indexer = new Map<String, Object>();
         // JSONParser parser = JSON.createParser(jsonString);
         // parseJson(indexer,'', parser, jsonString);
         
         // System.debug('convertedJson');
         // System.debug(JSON.serialize(indexer));
-        return indexer;
-    }
-    
-    private Map<String, Object> convertToIndexer(Object objInput) {
-        Map<String, Object> indexer = new Map<String, Object>();
-        indexObjectDeep(indexer,'', objInput);
         return indexer;
     }
 
@@ -155,36 +149,15 @@ public class JsonAutoMapper {
             indexObjectDeep(indexer, path + '[' + i + ']', listInput[i]);
         }
     }
-
-    // Regex too complicated: rollback
-    // private String transformJsonString(String jsonString) {
-    //     // System.debug(jsonString);
-    //     String jsonStringOutput = jsonString;
-    //     for (Integer i = 0; i < quotedFields.size(); i++) {
-    //         jsonStringOutput = quotedFields[i].matcher(jsonStringOutput).replaceAll(replacementQuotedFields[i]);
-    //     }
-    //     // System.debug(jsonStringOutput);
-    //     return jsonStringOutput;
-    // }
-
-    private String transformPath(String pathInput) {
-        String pathOutput = pathInput;
-        
-        // Regex too complicated: rollback
-        // System.debug('transformPath ' + pathOutput);
-        // for (Integer i = 0; i < targetFields.size(); i++) {
-        //    pathOutput = targetFields[i].matcher(pathOutput).replaceAll(replacementFields[i]);
-        // }
-        
-        // System.debug('transformPath ' + pathOutput);
-        for (Integer i = 0; i < targetPaths.size(); i++) {
-            pathOutput = targetPaths[i].matcher(pathOutput).replaceAll(replacementPaths[i]);
-        }
-        
-        return pathOutput;
+    
+    // deserializeUntyped: lower CPU
+    private Map<String, Object> convertToIndexer(Object objInput) {
+        Map<String, Object> indexer = new Map<String, Object>();
+        indexObjectDeep(indexer,'', objInput);
+        return indexer;
     }
 
-    // deserializeUntyped: lower CPU
+    // // JSONParser: higher CPU
 	// private void parseJson(Map<String, Object> indexer, String path, JSONParser parser, String jsonString) {
     //     JSONToken prevToken = null;
     //     JSONToken token = parser.nextToken();
@@ -217,7 +190,7 @@ public class JsonAutoMapper {
     //     }
     // }
 
-    // deserializeUntyped: lower CPU
+    // // JSONParser: higher CPU
 	// private void parseJObject(Map<String, Object> indexer, String path, JSONParser parser, String jsonString) {
     //     JSONToken prevToken = null;
     //     JSONToken token = parser.nextToken();
@@ -257,7 +230,7 @@ public class JsonAutoMapper {
     //     }
     // }
     
-    // deserializeUntyped: lower CPU
+    // // JSONParser: higher CPU
     // private void parseJArray(Map<String, Object> indexer, String path, Integer arrayIndex, JSONParser parser, String jsonString) {
     //     JSONToken prevToken = null;
     //     JSONToken token = parser.nextToken();
@@ -292,6 +265,34 @@ public class JsonAutoMapper {
     //         token = parser.nextToken();
     //     }
     // }
+
+    // // Regex too complicated: rollback
+    // private String transformJsonString(String jsonString) {
+    //     // System.debug(jsonString);
+    //     String jsonStringOutput = jsonString;
+    //     for (Integer i = 0; i < quotedFields.size(); i++) {
+    //         jsonStringOutput = quotedFields[i].matcher(jsonStringOutput).replaceAll(replacementQuotedFields[i]);
+    //     }
+    //     // System.debug(jsonStringOutput);
+    //     return jsonStringOutput;
+    // }
+
+    private String transformPath(String pathInput) {
+        String pathOutput = pathInput;
+        
+        // // Regex too complicated: rollback
+        // System.debug('transformPath ' + pathOutput);
+        // for (Integer i = 0; i < targetFields.size(); i++) {
+        //    pathOutput = targetFields[i].matcher(pathOutput).replaceAll(replacementFields[i]);
+        // }
+        
+        // System.debug('transformPath ' + pathOutput);
+        for (Integer i = 0; i < targetPaths.size(); i++) {
+            pathOutput = targetPaths[i].matcher(pathOutput).replaceAll(replacementPaths[i]);
+        }
+        
+        return pathOutput;
+    }
     
     private Object getData(Map<String, Object> indexer) {
         Map<String, Object> mapObject = spreadObject(indexer);
