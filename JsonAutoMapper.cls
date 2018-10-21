@@ -51,34 +51,39 @@ public class JsonAutoMapper {
     }
         
     public Object deserialize(String jsonString) {
-        Object objInput = JSON.deserializeUntyped(jsonString);
-    	return convert(objInput);
+        JSONParser parser = JSON.createParser(jsonString);
+    	return convertJson(parser);
 	}
         
     public Object deserialize(String jsonString, System.Type apexType) {
-        Object objInput = JSON.deserializeUntyped(jsonString);
-    	return convert(objInput, apexType);
+        JSONParser parser = JSON.createParser(jsonString);
+    	return convertJson(parser, apexType);
 	}
+    
+    public Object convertJson(JSONParser parser) {
+        Map<String, Object> objOutput = new Map<String, Object>();
+        fetchJson(objOutput,'', parser);
+        // System.debug('convertedJson');
+        // System.debug(JSON.serialize(objOutput));
+        return getData(objOutput);
+    }
 
-    public Object convert(Object objInput, System.Type apexType) {
-        Object objConverted = convert(objInput);
+    public Object convertJson(JSONParser parser, System.Type apexType) {
+        Object objConverted = convertJson(parser);
         String jsonString = JSON.serialize(objConverted);
-        // System.debug(jsonString);
         return JSON.deserialize(jsonString, apexType);
     }
     
     public Object convert(Object objInput) {
-        Map<String, Object> output = new Map<String, Object>();
-        fetchDeep(output,'', objInput);
-        
-        for (String path: output.keySet()) {
-            String transformedPath = transformPath(path);
-            
-            if (transformedPath != path) {
-                output.put(transformedPath, output.remove(path));
-            }
-        }
-        return getData(output);
+        Map<String, Object> objOutput = new Map<String, Object>();
+        fetchDeep(objOutput,'', objInput);
+        return getData(objOutput);
+    }
+
+    public Object convert(Object objInput, System.Type apexType) {
+        Object objConverted = convert(objInput);
+        String jsonString = JSON.serialize(objConverted);
+        return JSON.deserialize(jsonString, apexType);
     }
 
     private String transformPath(String pathInput) {
@@ -89,38 +94,144 @@ public class JsonAutoMapper {
         return pathOutput;
     }
 
-	private void fetchDeep(Map<String, Object> output, String path, Object objInput) {
-        if (objInput instanceof Map<String, Object>) {
-            fetchDeep(output, path, (Map<String, Object>)objInput);
-        } else if (objInput instanceof List<Object>) {
-            fetchDeep(output, path, (List<Object>)objInput);
-        } else {
-            output.put(path, objInput);
+	private void fetchJson(Map<String, Object> objOutput, String path, JSONParser parser) {
+        JSONToken prevToken = null;
+        JSONToken token = parser.nextToken();
+        while (token != null) {
+            switch on token {
+                when START_ARRAY {
+                	fetchJArray(objOutput, path, 0, parser);
+                }
+                when START_OBJECT {
+                    fetchJObject(objOutput, path, parser);
+                }
+                when VALUE_STRING, VALUE_EMBEDDED_OBJECT {
+                    objOutput.put(transformPath(path), parser.getText());
+                }
+                when VALUE_FALSE, VALUE_TRUE {
+                    objOutput.put(transformPath(path), parser.getBooleanValue());
+                }
+                when VALUE_NUMBER_FLOAT {
+                    objOutput.put(transformPath(path), parser.getDoubleValue());
+                }
+                when VALUE_NUMBER_INT {
+                    objOutput.put(transformPath(path), parser.getIntegerValue());
+                }
+                when VALUE_NULL {
+                    objOutput.put(transformPath(path), null);
+                }
+            }
+            prevToken = token;
+            token = parser.nextToken();
         }
     }
 
-	private void fetchDeep(Map<String, Object> output, String path, Map<String, Object> mapInput) {
+	private void fetchJObject(Map<String, Object> objOutput, String path, JSONParser parser) {
+        JSONToken prevToken = null;
+        JSONToken token = parser.nextToken();
+        String fieldName = '';
+        while (token != null) {
+            switch on token {
+                when START_OBJECT {
+                    fetchJObject(objOutput, path + '.' + fieldName, parser);
+                }
+                when START_ARRAY {
+                	fetchJArray(objOutput, path + '.' + fieldName, 0, parser);
+                }
+                when FIELD_NAME {
+                    fieldName = parser.getText();
+                }
+                when VALUE_STRING, VALUE_EMBEDDED_OBJECT {
+                    objOutput.put(transformPath(path + '.' + fieldName), parser.getText());
+                }
+                when VALUE_FALSE, VALUE_TRUE {
+                    objOutput.put(transformPath(path + '.' + fieldName), parser.getBooleanValue());
+                }
+                when VALUE_NUMBER_FLOAT {
+                    objOutput.put(transformPath(path + '.' + fieldName), parser.getDoubleValue());
+                }
+                when VALUE_NUMBER_INT {
+                    objOutput.put(transformPath(path + '.' + fieldName), parser.getIntegerValue());
+                }
+                when VALUE_NULL {
+                    objOutput.put(transformPath(path + '.' + fieldName), null);
+                }
+                when END_OBJECT {
+                    return;
+                }
+            }
+            prevToken = token;
+            token = parser.nextToken();
+        }
+    }
+    
+    private void fetchJArray(Map<String, Object> objOutput, String path, Integer arrayIndex, JSONParser parser) {
+        JSONToken prevToken = null;
+        JSONToken token = parser.nextToken();
+        while (token != null) {
+            switch on token {
+                when START_OBJECT {
+                    fetchJObject(objOutput, path + '[' + arrayIndex++ + ']', parser);
+                }
+                when START_ARRAY {
+                	fetchJArray(objOutput, path + '[' + arrayIndex++ + ']', 0, parser);
+                }
+                when VALUE_STRING, VALUE_EMBEDDED_OBJECT {
+                    objOutput.put(transformPath(path + '[' + (arrayIndex++) + ']'), parser.getText());
+                }
+                when VALUE_FALSE, VALUE_TRUE {
+                    objOutput.put(transformPath(path + '[' + (arrayIndex++) + ']'), parser.getBooleanValue());
+                }
+                when VALUE_NUMBER_FLOAT {
+                    objOutput.put(transformPath(path + '[' + (arrayIndex++) + ']'), parser.getDoubleValue());
+                }
+                when VALUE_NUMBER_INT {
+                    objOutput.put(transformPath(path + '[' + (arrayIndex++) + ']'), parser.getIntegerValue());
+                }
+                when VALUE_NULL {
+                    objOutput.put(transformPath(path + '[' + (arrayIndex++) + ']'), null);
+                }
+                when END_ARRAY {
+                    return;
+                }
+            }
+            prevToken = token;
+            token = parser.nextToken();
+        }
+    }
+
+	private void fetchDeep(Map<String, Object> objOutput, String path, Object objInput) {
+        if (objInput instanceof Map<String, Object>) {
+            fetchDeep(objOutput, path, (Map<String, Object>)objInput);
+        } else if (objInput instanceof List<Object>) {
+            fetchDeep(objOutput, path, (List<Object>)objInput);
+        } else {
+            objOutput.put(transformPath(path), objInput);
+        }
+    }
+
+	private void fetchDeep(Map<String, Object> objOutput, String path, Map<String, Object> mapInput) {
         for (String key: mapInput.keySet()) {
-            fetchDeep(output, path + '.' + key, mapInput.get(key));
+            fetchDeep(objOutput, path + '.' + key, mapInput.get(key));
         }
     }
     
-    private void fetchDeep(Map<String, Object> output, String path, List<Object> listInput) {
+    private void fetchDeep(Map<String, Object> objOutput, String path, List<Object> listInput) {
         for (Integer i = 0; i < listInput.size(); i++) {
-            fetchDeep(output, path + '[' + i + ']', listInput[i]);
+            fetchDeep(objOutput, path + '[' + i + ']', listInput[i]);
         }
     }
     
-    private Object getData(Map<String, Object> output) {
-        Map<String, Object> mapObject = spreadObject(output);
+    private Object getData(Map<String, Object> objOutput) {
+        Map<String, Object> mapObject = spreadObject(objOutput);
         // System.debug(mapObject);
         return reformatObject(mapObject);
     }
     
-    private Map<String, Object> spreadObject(Map<String, Object> output) {
+    private Map<String, Object> spreadObject(Map<String, Object> objOutput) {
         Map<String, Object> mapObject = new Map<String, Object>();
 		
-        for (String path: output.keySet()) {
+        for (String path: objOutput.keySet()) {
             Map<String, Object> mapCurrent = mapObject;
             String keyCurrent = '';
             
@@ -146,7 +257,7 @@ public class JsonAutoMapper {
                 }
             }
 
-            mapCurrent.put(keyCurrent, output.get(path));
+            mapCurrent.put(keyCurrent, objOutput.get(path));
         }
         return mapObject;
     }
