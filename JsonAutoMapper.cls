@@ -101,7 +101,7 @@ public class JsonAutoMapper {
     }
     
     private String serializeIndexer(Map<String, Object> indexer) {
-        // JSONGenerator: higher CPU
+        // // JSONGenerator: higher CPU
         // return JSON.serialize(getData(indexer));
         
         // JSONGenerator: lower CPU
