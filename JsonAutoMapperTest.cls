@@ -25,34 +25,34 @@ public class JsonAutoMapperTest {
         // null test
 		TestDefault mdlNull = (TestDefault)new JsonAutoMapper().deserialize('null', TestDefault.class);
 		System.assertEquals(null, mdlNull);
-		TestDefault mdlNullCoverage = (TestDefault)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('null', TestDefault.class);
-		System.assertEquals(null, mdlNullCoverage);
+		// TestDefault mdlNullCoverage = (TestDefault)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('null', TestDefault.class);
+		// System.assertEquals(null, mdlNullCoverage);
         
         // string test
 		String mdlString = (String)new JsonAutoMapper().deserialize('"string"', String.class);
 		System.assertEquals('string', mdlString);
-		String mdlStringCoverage = (String)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('"string"', String.class);
-		System.assertEquals('string', mdlStringCoverage);
+		// String mdlStringCoverage = (String)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('"string"', String.class);
+		// System.assertEquals('string', mdlStringCoverage);
         
         // integer test
 		Integer mdlInteger = (Integer)new JsonAutoMapper().deserialize('123', Integer.class);
 		System.assertEquals(123, mdlInteger);
-		Integer mdlIntegerCoverage = (Integer)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('123', Integer.class);
-		System.assertEquals(123, mdlIntegerCoverage);
+		// Integer mdlIntegerCoverage = (Integer)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('123', Integer.class);
+		// System.assertEquals(123, mdlIntegerCoverage);
         
         // double test
 		Double mdlDouble = (Double)new JsonAutoMapper().deserialize('123.456', Double.class);
 		System.assertEquals(123.456, mdlDouble);
-		Double mdlDoubleCoverage = (Double)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('123.456', Double.class);
-		System.assertEquals(123.456, mdlDoubleCoverage);
+		// Double mdlDoubleCoverage = (Double)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('123.456', Double.class);
+		// System.assertEquals(123.456, mdlDoubleCoverage);
         
         // Boolean test
 		Boolean mdlTrue = (Boolean)new JsonAutoMapper().deserialize('true', Boolean.class);
 		System.assertEquals(true, mdlTrue);
 		Boolean mdlFalse = (Boolean)new JsonAutoMapper().deserialize('false', Boolean.class);
 		System.assertEquals(false, mdlFalse);
-		Boolean mdlFalseCoverage = (Boolean)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('false', Boolean.class);
-		System.assertEquals(false, mdlFalseCoverage);
+		// Boolean mdlFalseCoverage = (Boolean)new JsonAutoMapper(false).addPath('.+','$1$2').deserialize('false', Boolean.class);
+		// System.assertEquals(false, mdlFalseCoverage);
         
         Object invalidObj = new JsonAutoMapper().deserialize('{"!":"Invalid Field Name"}');
         System.assertEquals('Invalid Field Name', invalidObj);
