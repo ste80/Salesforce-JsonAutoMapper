@@ -1,8 +1,11 @@
 public class JsonAutoMapper {
     public static final String RESERVED_KEYWORDS = 'abstract|activate|and|any|array|as|asc|autonomous|begin|bigdecimal|blob|break|bulk|by|byte|case|cast|catch|char|class|collect|commit|const|continue|convertcurrency|decimal|default|delete|desc|do|else|end|enum|exception|exit|export|extends|false|final|finally|float|for|from|future|global|goto|group|having|hint|if|implements|import|in|inner|insert|instanceof|interface|into|int|join|last_90_days|last_month|last_n_days|last_week|like|limit|list|long|loop|map|merge|new|next_90_days|next_month|next_n_days|next_week|not|null|nulls|number|object|of|on|or|outer|override|package|parallel|pragma|private|protected|public|retrieve|return|returning|rollback|savepoint|search|select|set|short|sort|stat|static|super|switch|synchronized|system|testmethod|then|this|this_month|this_week|throw|today|tolabel|tomorrow|transaction|trigger|true|try|type|undelete|update|upsert|using|virtual|webservice|when|where|while|yesterday';
     public static final String IGNORE_CASE = '(?i)';
-    public static final String OBJECT_QUOTE_START = '(?<!\\\\)(\\")';
-    public static final String OBJECT_QUOTE_END = '(\\"\\s*:)';
+ 
+    // Regex too complicated
+    // public static final String OBJECT_QUOTE_START = '(?<!\\\\)(\\")';
+    // public static final String OBJECT_QUOTE_END = '(?<!\\\\)\\"\\s*:';
+
     public static final String VARIABLE_PATH = '[\\s\\S]*\\.';
     public static final String INVALID_VARIABLE_CHARS = '[^a-z0-9_]';
     public static final String INVALID_UNDERSCORES = '(?:^_+|_+$|(?<=_)_+)';
@@ -10,8 +13,10 @@ public class JsonAutoMapper {
     
     private static Pattern patternToken = Pattern.compile('\\[(\\d+)]|\\.([^\\.\\[]+)');
 
-    private List<Pattern> quotedFields = new List<Pattern>();
-    private List<String> replacementQuotedFields = new List<String>();
+    // Regex too complicated
+    // private List<Pattern> quotedFields = new List<Pattern>();
+    // private List<String> replacementQuotedFields = new List<String>();
+
     private List<Pattern> targetFields = new List<Pattern>();
     private List<String> replacementFields = new List<String>();
 
@@ -29,8 +34,9 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper reset() {
-        quotedFields.clear();
-        replacementQuotedFields.clear();
+    	// Regex too complicated
+        // quotedFields.clear();
+        // replacementQuotedFields.clear();
         targetFields.clear();
         replacementFields.clear();
         targetPaths.clear();
@@ -43,9 +49,10 @@ public class JsonAutoMapper {
     }
 
     public JsonAutoMapper addField(String target, String replacement, Boolean ignoreCase) {
-        quotedFields.add(Pattern.compile(
-            (ignoreCase ? IGNORE_CASE : '') + OBJECT_QUOTE_START + '(' + target + ')' + OBJECT_QUOTE_END));
-        replacementQuotedFields.add('$1' + replacement + '$3');
+    	// Regex too complicated
+        // quotedFields.add(Pattern.compile(
+        //     (ignoreCase ? IGNORE_CASE : '') + OBJECT_QUOTE_START + '(' + target + ')' + OBJECT_QUOTE_END));
+        // replacementQuotedFields.add('$1' + replacement + '":');
         targetFields.add(Pattern.compile(
             (ignoreCase ? IGNORE_CASE : '') + '^(' + VARIABLE_PATH + ')(' + target + ')$'));
         replacementFields.add('$1' + replacement);
@@ -68,25 +75,27 @@ public class JsonAutoMapper {
 	}
         
     public Object deserialize(String jsonString, System.Type apexType) {
-        if (targetPaths.size() > 0) {
-            Map<String, Object> indexer = parseJsonToIndexer(jsonString);
-            String convertedJsonString = serializeIndexer(indexer);
-            return JSON.deserialize(convertedJsonString, apexType);
-        } else {
-            String convertedJsonString = transformJsonString(jsonString);
-            return JSON.deserialize(convertedJsonString, apexType);
-        }
+    	// Regex too complicated
+        // if (targetPaths.size() > 0) {
+        Map<String, Object> indexer = parseJsonToIndexer(jsonString);
+        String convertedJsonString = serializeIndexer(indexer);
+        return JSON.deserialize(convertedJsonString, apexType);
+        // } else {
+        //     String convertedJsonString = transformJsonString(jsonString);
+        //     return JSON.deserialize(convertedJsonString, apexType);
+        // }
 	}
 
     public String serialize(Object objInput) {
         String jsonString = JSON.serialize(objInput);
         
-        if (targetPaths.size() > 0) {
-            Map<String, Object> indexer = parseJsonToIndexer(jsonString);
-            return serializeIndexer(indexer);
-        } else {
-            return transformJsonString(jsonString);
-        }
+    	// Regex too complicated
+        // if (targetPaths.size() > 0) {
+        Map<String, Object> indexer = parseJsonToIndexer(jsonString);
+        return serializeIndexer(indexer);
+        // } else {
+        //     return transformJsonString(jsonString);
+        // }
     }
     
     public Map<String, Object> parseJsonToIndexer(String jsonString) {
@@ -118,15 +127,16 @@ public class JsonAutoMapper {
     //     return indexer;
     // }
 
-    private String transformJsonString(String jsonString) {
-        // System.debug(jsonString);
-        String jsonStringOutput = jsonString;
-        for (Integer i = 0; i < quotedFields.size(); i++) {
-            jsonStringOutput = quotedFields[i].matcher(jsonStringOutput).replaceAll(replacementQuotedFields[i]);
-        }
-        // System.debug(jsonStringOutput);
-        return jsonStringOutput;
-    }
+    // Regex too complicated
+    // private String transformJsonString(String jsonString) {
+    //     // System.debug(jsonString);
+    //     String jsonStringOutput = jsonString;
+    //     for (Integer i = 0; i < quotedFields.size(); i++) {
+    //         jsonStringOutput = quotedFields[i].matcher(jsonStringOutput).replaceAll(replacementQuotedFields[i]);
+    //     }
+    //     // System.debug(jsonStringOutput);
+    //     return jsonStringOutput;
+    // }
 
     private String transformPath(String pathInput) {
         String pathOutput = pathInput;
